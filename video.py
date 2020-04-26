@@ -20,47 +20,39 @@ images = os.listdir('picturesforcode')
 
 
 
-
-print(images)
+#print(images)
 
 known_images = []
 
-for imagefile in images:
-    print("the imagefile is", imagefile)
-    if imagefile.startswith('.'): 
-        continue
-    known_image = face_recognition.load_image_file('picturesforcode/'+imagefile)
-    #print(known_image)
-    #print("going to encode image")
-    known_image_encoded = face_recognition.face_encodings(known_image)[0]
-    #print(known_image_encoded) 
-    known_images.append(known_image_encoded)
-#print("print known images", known_images)
 
-input_movie = cv2.VideoCapture("videosforcode/abigailgreenberg.MP4")
+image_faces = [imagefile for imagefile in images if not imagefile.startswith('.') ]
+for imagefile in image_faces:
+    known_image = face_recognition.load_image_file('picturesforcode/'+imagefile)
+    known_image_encoded = face_recognition.face_encodings(known_image)[0] 
+    known_images.append(known_image_encoded)
+
+
+input_movie = cv2.VideoCapture("videosforcode/abigail.mp4")
 
 
 
 while True:
     frame_left, frame = input_movie.read()
-    #print(frame_left, frame)
     if frame_left == False: 
         break 
-    rgb_frame = frame
-    #rgb_frame = frame[:, :, ::-1]
-    #print(rgb_frame)
-    face_locations = face_recognition.face_locations(rgb_frame)
-    print(face_locations)
+    rgb_frame = frame[:, :, ::-1]
+    face_locations = face_recognition.face_locations(rgb_frame) 
     rgb_frame_encoded = face_recognition.face_encodings(rgb_frame, face_locations)
     if len(rgb_frame_encoded) != 0:
         print("found a face")
-        results = face_recognition.compare_faces(known_images, rgb_frame_encoded)
-        #print(results)
-        results.index(True)
-        index_of_true = results.index(True)
-        name = images[index_of_true]
-        print(os.path.splitext(name)[0])
-
+        results = face_recognition.compare_faces(known_images, rgb_frame_encoded[0], tolerance=0.5)
+        try:
+            results.index(True)
+            index_of_true = results.index(True)
+            name = image_faces[index_of_true]
+            print(os.path.splitext(name)[0])
+        except ValueError:
+            print("no match")
 (''') 
 1. find location of true in the results
 2. find same number in images list
